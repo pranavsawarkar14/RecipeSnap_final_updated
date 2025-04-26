@@ -149,7 +149,7 @@ const CameraPage = () => {
         instructions: recipe.instructions,
         tipsAndTricks: recipe.tipsAndTricks,
         calories: 200, // Replace with actual data if available
-        imageUrl: 'https://picsum.photos/400/200', // Dummy image
+        imageUrl: `https://source.unsplash.com/featured/400x200/?${encodeURIComponent(recipe.name)},food,cooking`, // Better image source
         category: 'Generated',
         canMake: recipe.canMake,
         href: `/recipe/${encodeURIComponent(recipe.name)}`, // Add href

@@ -57,6 +57,49 @@ type DetailedRecipe = {
   equipment: string[];
   rating?: number;
   favorite?: boolean;
+  imageUrl: string;
+  category: string;
+  calories: number;
+};
+
+type GeneratedRecipe = {
+  name: string;
+  title?: string;
+  description?: string;
+  story?: string;
+  background?: string;
+  history?: string;
+  ingredients: string[];
+  ingredientNotes?: Record<string, string>;
+  notes?: Record<string, string>;
+  instructions: string;
+  tips?: string[];
+  cookingTips?: string[];
+  prepTime?: string;
+  cookTime?: string;
+  totalTime?: string;
+  servings?: number;
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  cuisine?: string;
+  cuisineType?: string;
+  nutrition?: {
+    calories?: number;
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+    fiber?: string;
+    sugar?: string;
+    sodium?: string;
+  };
+  dietaryInfo?: string[];
+  dietary?: string[];
+  tags?: string[];
+  variations?: string[];
+  alternativeVersions?: string[];
+  storage?: string;
+  storageInstructions?: string;
+  equipment?: string[];
+  kitchenTools?: string[];
 };
 
 const languageMapping: Record<string, string> = {
@@ -320,14 +363,26 @@ const RecipeFromTextPage = () => {
       
       const result = await generateRecipeFromText({
         recipeDescription: enhancedDescription,
-        language: languageCode,
-        detailLevel: "very_high"
+        language: languageCode
       });
 
       setGenerationProgress(60);
       
       if (result.recipes?.length > 0) {
-        const formattedRecipes = result.recipes.map((recipe) => {
+        const formattedRecipes = result.recipes.map((recipe: GeneratedRecipe) => {
+          // Create a more specific search query for the image
+          const searchTerms = [
+            recipe.name || recipe.title || "food",
+            recipe.cuisine || selectedCuisines[0] || "",
+            "recipe",
+            "food",
+            "dish",
+            "cooking",
+            "meal"
+          ].filter(Boolean).join(',');
+          
+          const searchQuery = encodeURIComponent(searchTerms);
+          
           const formattedRecipe: DetailedRecipe = {
             id: uuidv4(),
             title: recipe.name || recipe.title || "Detailed Recipe",
@@ -358,7 +413,10 @@ const RecipeFromTextPage = () => {
             storage: recipe.storage || recipe.storageInstructions || "Store leftovers in an airtight container in the refrigerator for up to 3 days.",
             equipment: parseArrayData(recipe.equipment || recipe.kitchenTools, ["Basic kitchen equipment"]),
             rating: 0,
-            favorite: false
+            favorite: false,
+            imageUrl: `https://source.unsplash.com/featured/600x400/?${searchQuery}`,
+            category: recipe.cuisine || "Fusion",
+            calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200
           };
           
           return formattedRecipe;
@@ -366,6 +424,13 @@ const RecipeFromTextPage = () => {
 
         setGenerationProgress(95);
         setRecipes(formattedRecipes);
+        
+        // Save generated recipes to localStorage
+        const existingRecipes = localStorage.getItem('generatedRecipes');
+        const allGeneratedRecipes = existingRecipes 
+          ? [...JSON.parse(existingRecipes), ...formattedRecipes]
+          : formattedRecipes;
+        localStorage.setItem('generatedRecipes', JSON.stringify(allGeneratedRecipes));
         
         toast({
           title: "Detailed recipe created!",
@@ -380,15 +445,15 @@ const RecipeFromTextPage = () => {
       }
     } catch (error) {
       console.error('Error generating recipe:', error);
+      setError("An error occurred while generating the recipe. Please try again.");
       toast({
-        variant: "destructive",
         title: "Error",
-        description: "Our kitchen is busy. Please try again!",
+        description: "Failed to generate recipe. Please try again.",
+        variant: "destructive"
       });
-      setError("An error occurred while generating your recipe. Please try again.");
     } finally {
+      setIsLoading(false);
       setGenerationProgress(100);
-      setTimeout(() => setIsLoading(false), 500);
     }
   };
 

@@ -229,7 +229,7 @@ const CreateRecipe = () => {
         };
       }));
 
-      setRecipes(recipesWithDetails.map(recipe => ({
+      const formattedRecipes = recipesWithDetails.map(recipe => ({
         id: recipe.name,
         title: recipe.name,
         description: recipe.description,
@@ -242,7 +242,16 @@ const CreateRecipe = () => {
         category: 'Generated',
         canMake: recipe.canMake,
         href: `/recipe/${encodeURIComponent(recipe.name)}`,
-      })));
+      }));
+
+      setRecipes(formattedRecipes);
+
+      // Save generated recipes to localStorage
+      const existingRecipes = localStorage.getItem('generatedRecipes');
+      const allGeneratedRecipes = existingRecipes 
+        ? [...JSON.parse(existingRecipes), ...formattedRecipes]
+        : formattedRecipes;
+      localStorage.setItem('generatedRecipes', JSON.stringify(allGeneratedRecipes));
 
       setActiveTab('results');
       toast({

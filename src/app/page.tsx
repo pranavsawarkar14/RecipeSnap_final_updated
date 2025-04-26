@@ -19,7 +19,33 @@ const mockRecipes: Recipe[] = [
     id: '1',
     title: 'Chicken Fried Rice',
     description: 'So irresistibly delicious',
-    calories: 250,
+    story: 'A classic Asian dish with a perfect balance of flavors',
+    ingredients: ['chicken', 'rice', 'vegetables', 'soy sauce'],
+    ingredientNotes: {},
+    instructions: ['Cook rice', 'Stir fry chicken', 'Add vegetables', 'Mix everything'],
+    tips: ['Use day-old rice for best results'],
+    prepTime: '15 mins',
+    cookTime: '20 mins',
+    totalTime: '35 mins',
+    servings: 4,
+    difficulty: 'Medium',
+    cuisine: 'Asian',
+    nutrition: {
+      calories: 250,
+      protein: '20g',
+      carbs: '30g',
+      fat: '8g',
+      fiber: '3g',
+      sugar: '2g',
+      sodium: '500mg'
+    },
+    dietaryInfo: ['High Protein'],
+    tags: ['Asian', 'Quick Meal'],
+    variations: ['Vegetarian version available'],
+    storage: 'Store in refrigerator for up to 3 days',
+    equipment: ['Wok', 'Rice Cooker'],
+    rating: 4,
+    favorite: false,
     imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
     category: 'Vegetable',
   },
@@ -27,7 +53,33 @@ const mockRecipes: Recipe[] = [
     id: '2',
     title: 'Pasta Bolognese',
     description: 'True Italian classic',
-    calories: 200,
+    story: 'A traditional Italian meat sauce served with pasta',
+    ingredients: ['ground beef', 'tomatoes', 'pasta', 'onions', 'garlic'],
+    ingredientNotes: {},
+    instructions: ['Cook pasta', 'Prepare sauce', 'Combine and serve'],
+    tips: ['Let the sauce simmer for at least 2 hours'],
+    prepTime: '20 mins',
+    cookTime: '2 hours',
+    totalTime: '2 hours 20 mins',
+    servings: 6,
+    difficulty: 'Medium',
+    cuisine: 'Italian',
+    nutrition: {
+      calories: 200,
+      protein: '15g',
+      carbs: '25g',
+      fat: '7g',
+      fiber: '4g',
+      sugar: '3g',
+      sodium: '400mg'
+    },
+    dietaryInfo: ['High Protein'],
+    tags: ['Italian', 'Comfort Food'],
+    variations: ['Vegetarian version available'],
+    storage: 'Store in refrigerator for up to 4 days',
+    equipment: ['Large Pot', 'Saucepan'],
+    rating: 5,
+    favorite: false,
     imageUrl: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8',
     category: 'Rice',
   },
@@ -188,15 +240,31 @@ const Index = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // In a real app, we would fetch from an API
-    setRecipes(mockRecipes);
+    // First load generated recipes from localStorage
+    const generatedRecipes = localStorage.getItem('generatedRecipes');
+    let allRecipes = [...mockRecipes];
 
-    // Display welcome toast on initial load
-    toast({
-      title: "Welcome to Pic 2 Plate!",
-      description: "Discover healthy and delicious recipes",
-      duration: 1000,
-    });
+    if (generatedRecipes) {
+      try {
+        const parsedRecipes = JSON.parse(generatedRecipes);
+        // Add generated recipes at the beginning of the list
+        allRecipes = [...parsedRecipes, ...allRecipes];
+      } catch (error) {
+        console.error('Error parsing generated recipes:', error);
+      }
+    }
+
+    // Set all recipes with generated ones on top
+    setRecipes(allRecipes);
+
+    // Show welcome toast on first load
+    if (!localStorage.getItem('hasSeenWelcome')) {
+      toast({
+        title: "Welcome to RecipeSnap!",
+        description: "Discover, create, and share your favorite recipes.",
+      });
+      localStorage.setItem('hasSeenWelcome', 'true');
+    }
   }, []);
 
   useEffect(() => {
@@ -223,7 +291,20 @@ const Index = () => {
     ? recipes
     : recipes.filter(r => r.category === activeCategory);
 
-  const popularRecipes = recipes.filter(r => r.calories > 200);
+  // Fixed popularRecipes definition
+  // Get popular recipes with calories > 200
+  const popularRecipes = recipes.filter(recipe => {
+    // Check if calories exist directly on the recipe
+    if (recipe.calories !== undefined) {
+      return recipe.calories > 200;
+    }
+    // Check if calories exist in the nutrition object
+    if (recipe.nutrition?.calories !== undefined) {
+      return recipe.nutrition.calories > 200;
+    }
+    // Skip recipes with no calorie information
+    return false;
+  });
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -237,8 +318,6 @@ const Index = () => {
         <h1 className="text-4xl font-bold">Pic 2 Plate</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
-
-    
 
       <CategoryFilter
         activeCategory={activeCategory}
