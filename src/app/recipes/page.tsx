@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, Home, Book, Heart, Upload, FileText, Youtube, User, Settings } from 'lucide-react';
+import { Menu, Home, Book, Heart, Upload, FileText, Youtube, User, Settings, Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -23,196 +23,19 @@ type Recipe = {
 };
 
 const mockRecipes: Recipe[] = [
-  {
-    id: '1',
-    title: 'Chicken Fried Rice',
-    description: 'So irresistibly delicious',
-    calories: 250,
-    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-    category: 'Rice',
-    prepTime: '25 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '2',
-    title: 'Pasta Bolognese',
-    description: 'True Italian classic',
-    calories: 200,
-    imageUrl: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8',
-    category: 'Pasta',
-    prepTime: '35 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '3',
-    title: 'Garlic Potatoes',
-    description: 'Crispy Garlic Roasted Potatoes',
-    calories: 150,
-    imageUrl: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf',
-    category: 'Vegetable',
-    prepTime: '40 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '4',
-    title: 'Fruit Salad',
-    description: 'Sweet and refreshing mix',
-    calories: 120,
-    imageUrl: 'https://images.unsplash.com/photo-1568158879083-c42860933ed7',
-    category: 'Fruit',
-    prepTime: '15 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '5',
-    title: 'Avocado Toast',
-    description: 'Perfect breakfast option',
-    calories: 180,
-    imageUrl: 'https://www.simplotfoods.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2F0dkgxhks0leg%2FkDuiYdR8XTw15l7lWLDl4%2Fa226c36c3af6960bccf788363eec61f9%2FDecemberDEC_15.jpg%3Ffm%3Dwebp&w=3840&q=75',
-    category: 'Breakfast',
-    prepTime: '10 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '6',
-    title: 'Grilled Salmon',
-    description: 'Fresh and healthy seafood',
-    calories: 220,
-    imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2',
-    category: 'Seafood',
-    prepTime: '25 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '7',
-    title: 'Chocolate Cake',
-    description: 'Rich and decadent dessert',
-    calories: 350,
-    imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587',
-    category: 'Dessert',
-    prepTime: '50 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '8',
-    title: 'Iced Coffee',
-    description: 'Refreshing cold brew',
-    calories: 90,
-    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735',
-    category: 'Beverages',
-    prepTime: '5 min',
-    difficulty: 'Easy',
-  },
-  // New recipes added below
-  {
-    id: '9',
-    title: 'Mediterranean Salad',
-    description: 'Fresh veggies with feta and olives',
-    calories: 180,
-    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd',
-    category: 'Vegetable',
-    prepTime: '15 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '10',
-    title: 'Mushroom Risotto',
-    description: 'Creamy Italian rice dish',
-    calories: 320,
-    imageUrl: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371',
-    category: 'Rice',
-    prepTime: '45 min',
-    difficulty: 'Hard',
-  },
-  {
-    id: '11',
-    title: 'Berry Smoothie Bowl',
-    description: 'Packed with antioxidants',
-    calories: 210,
-    imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777',
-    category: 'Fruit',
-    prepTime: '10 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '12',
-    title: 'Lemon Garlic Shrimp',
-    description: 'Zesty and flavorful seafood delight',
-    calories: 240,
-    imageUrl: 'https://images.unsplash.com/photo-1574484284002-952d92456975',
-    category: 'Seafood',
-    prepTime: '20 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '13',
-    title: 'Spicy Thai Noodles',
-    description: 'Bold flavors with a kick',
-    calories: 380,
-    imageUrl: 'https://images.unsplash.com/photo-1569058242567-93de6f36f8eb',
-    category: 'Pasta',
-    prepTime: '30 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '14',
-    title: 'Protein Pancakes',
-    description: 'Healthy start to your day',
-    calories: 280,
-    imageUrl: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93',
-    category: 'Breakfast',
-    prepTime: '20 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '15',
-    title: 'Roasted Vegetables',
-    description: 'Colorful mix of seasonal veggies',
-    calories: 160,
-    imageUrl: 'https://images.unsplash.com/photo-1518133683791-0b9de5a055f0',
-    category: 'Vegetable',
-    prepTime: '35 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '16',
-    title: 'Mango Sticky Rice',
-    description: 'Traditional Thai dessert',
-    calories: 290,
-    imageUrl: 'https://images.unsplash.com/photo-1563379091-3208a7995d68',
-    category: 'Rice',
-    prepTime: '40 min',
-    difficulty: 'Medium',
-  },
-  {
-    id: '17',
-    title: 'Homemade Granola',
-    description: 'Crunchy and nutritious',
-    calories: 210,
-    imageUrl: 'https://images.unsplash.com/photo-1517093157656-b9eccef91cb1',
-    category: 'Breakfast',
-    prepTime: '25 min',
-    difficulty: 'Easy',
-  },
-  {
-    id: '18',
-    title: 'Tiramisu',
-    description: 'Classic Italian coffee dessert',
-    calories: 320,
-    imageUrl: 'https://images.unsplash.com/photo-1551404973-761c5756ce73',
-    category: 'Dessert',
-    prepTime: '30 min',
-    difficulty: 'Medium',
-  },
+  // ... (keep your existing mockRecipes array)
 ];
 
 const categories = ['Vegetable', 'Rice', 'Fruit', 'Pasta', 'Seafood', 'Breakfast', 'Dessert', 'Beverages'];
 
 const RecipesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('Vegetable');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredRecipes = mockRecipes.filter(
-    (recipe) => recipe.category === selectedCategory
+    (recipe) => 
+      recipe.category === selectedCategory &&
+      recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Get popular recipes (those with lowest calories in each category)
@@ -228,93 +51,93 @@ const RecipesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with Navbar */}
-      <header className="sticky top-0 z-10 bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+      {/* Modern Header */}
+      <header className="sticky top-0 z-10 bg-white shadow-sm backdrop-blur-sm bg-opacity-90">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Sheet>
                 <SheetTrigger asChild>
                   <button 
                     aria-label="Menu"
-                    className="p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   >
-                    <Menu className="w-6 h-6" />
+                    <Menu className="w-5 h-5" />
                   </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[80%] sm:w-[350px] pt-12">
+                <SheetContent side="left" className="w-[280px] sm:w-[350px] pt-12">
                   <SheetHeader>
-                    <SheetTitle className="text-xl font-bold">Menu</SheetTitle>
+                    <SheetTitle className="text-xl font-bold text-gray-800">Menu</SheetTitle>
                   </SheetHeader>
                   <nav className="mt-8">
-                    <ul className="space-y-4">
+                    <ul className="space-y-2">
                       <li>
                         <Link
                           href="/"
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                         >
                           <Home className="h-5 w-5"/>
-                          <span className="text-lg">Home</span>
+                          <span className="text-base font-medium">Home</span>
                         </Link>
                       </li>
                       <li>
                         <Link
                           href="/recipes"
-                          className="flex items-center gap-3 p-3 rounded-lg bg-slate-100 transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-green-50 text-green-600 transition-colors"
                         >
                           <Book className="h-5 w-5"/>
-                          <span className="text-lg">All Recipes</span>
+                          <span className="text-base font-medium">All Recipes</span>
                         </Link>
                       </li>
                       <li>
                         <Link
                           href="/favorites"
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                         >
                           <Heart className="h-5 w-5"/>
-                          <span className="text-lg">Favorites</span>
+                          <span className="text-base font-medium">Favorites</span>
                         </Link>
                       </li>
                       <li>
                         <Link href="/create-recipe"
-                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
-                          <Upload className="h-6 w-6"/>
-                          <span className="text-lg">Upload Photo</span>
+                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                          <Upload className="h-5 w-5"/>
+                          <span className="text-base font-medium">Upload Photo</span>
                         </Link>
                       </li>
                       <li>
                         <Link href="/recipe-from-text"
-                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
-                          <FileText className="h-6 w-6"/>
-                          <span className="text-lg">Recipe from Text</span>
+                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                          <FileText className="h-5 w-5"/>
+                          <span className="text-base font-medium">Recipe from Text</span>
                         </Link>
                       </li>
                       <li>
                         <Link
                             href="/youtube-recommendation"
-                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                         >
-                            <Youtube className="h-6 w-6"/>
-                            <span className="text-lg">YouTube Recommendation</span>
+                            <Youtube className="h-5 w-5"/>
+                            <span className="text-base font-medium">YouTube</span>
                         </Link>
                       </li>
-                      <div className="border-t my-4"></div>
+                      <div className="border-t border-gray-200 my-3"></div>
                       <li>
                         <Link
                           href="/profile"
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                         >
                           <User className="h-5 w-5"/>
-                          <span className="text-lg">My Profile</span>
+                          <span className="text-base font-medium">Profile</span>
                         </Link>
                       </li>
                       <li>
                         <Link
                           href="/settings"
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                         >
                           <Settings className="h-5 w-5"/>
-                          <span className="text-lg">Settings</span>
+                          <span className="text-base font-medium">Settings</span>
                         </Link>
                       </li>
                     </ul>
@@ -322,12 +145,28 @@ const RecipesPage = () => {
                 </SheetContent>
               </Sheet>
               
+              <h1 className="text-xl font-bold text-gray-800 hidden sm:block">RecipeFinder</h1>
             </div>
-            <div>
-              <button className="p-2 rounded-md hover:bg-gray-100">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="M21 21l-4.35-4.35" />
+            
+            {/* Modern Search Bar */}
+            <div className="relative w-full max-w-md mx-4">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search recipes..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
               </button>
             </div>
@@ -336,128 +175,189 @@ const RecipesPage = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Discover Recipes</h1>
-          <p className="text-gray-500">Healthy and nutritious food recipes for every taste</p>
-        </header>
+        {/* Hero Section */}
+        <section className="mb-8 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white">
+          <h1 className="text-3xl font-bold mb-2">Discover Delicious Recipes</h1>
+          <p className="text-green-100 mb-4">Healthy and nutritious food recipes for every taste</p>
+          <button className="bg-white text-green-600 px-4 py-2 rounded-full font-medium hover:bg-opacity-90 transition-all">
+            Explore Now
+          </button>
+        </section>
 
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-1 rounded-full border whitespace-nowrap ${
-                selectedCategory === cat ? 'bg-green-600 text-white' : 'text-gray-700 border-gray-300'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Category Chips */}
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Categories</h2>
+          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+                  selectedCategory === cat 
+                    ? 'bg-green-600 text-white shadow-md' 
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredRecipes.map((recipe) => (
-            <div
-              key={recipe.id}
-              className="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <img
-                src={recipe.imageUrl}
-                alt={recipe.title}
-                className="rounded-lg w-full h-40 object-cover"
-              />
-              <div className="mt-3">
-                <h3 className="text-lg font-semibold">{recipe.title}</h3>
-                <p className="text-sm text-gray-500">{recipe.description}</p>
-                <div className="flex justify-between items-center mt-2">
-                  <div>
-                    <span className="text-gray-700">{recipe.calories} Kcal</span>
+        {/* Featured Recipes */}
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-800">{selectedCategory} Recipes</h2>
+            <Link href="#" className="text-green-600 text-sm font-medium flex items-center">
+              View all <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          
+          {filteredRecipes.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No recipes found for this category.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {filteredRecipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group"
+                >
+                  <div className="relative aspect-square overflow-hidden">
+                    <img
+                      src={recipe.imageUrl}
+                      alt={recipe.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors">
+                      <Heart className="h-5 w-5 text-gray-400 hover:text-red-500" />
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-1 text-gray-800">{recipe.title}</h3>
+                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">{recipe.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+                        {recipe.calories} Kcal
+                      </span>
+                      {recipe.prepTime && (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                          {recipe.prepTime}
+                        </span>
+                      )}
+                      {recipe.difficulty && (
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          recipe.difficulty === 'Easy' ? 'bg-green-100 text-green-600' :
+                          recipe.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-red-100 text-red-600'
+                        }`}>
+                          {recipe.difficulty}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Popular Food */}
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Popular Choices</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {popularRecipes.map((recipe) => (
+              <div 
+                key={recipe.id} 
+                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex"
+              >
+                <div className="w-1/3 relative">
+                  <img
+                    src={recipe.imageUrl}
+                    alt={recipe.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="w-2/3 p-4">
+                  <h3 className="font-semibold text-gray-800">{recipe.title}</h3>
+                  <p className="text-sm text-gray-500 mb-2 line-clamp-2">{recipe.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+                      {recipe.calories} Kcal
+                    </span>
                     {recipe.prepTime && (
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded ml-2">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                         {recipe.prepTime}
                       </span>
                     )}
-                    {recipe.difficulty && (
-                      <span className={`text-xs px-2 py-1 rounded ml-2 ${
-                        recipe.difficulty === 'Easy' ? 'bg-green-100 text-green-600' :
-                        recipe.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-red-100 text-red-600'
-                      }`}>
-                        {recipe.difficulty}
+                  </div>
+                  <button className="mt-3 text-xs font-medium text-green-600 hover:text-green-700 flex items-center">
+                    View Recipe <ChevronRight className="h-3 w-3 ml-1" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Trending Section */}
+        <section>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Trending This Week</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {mockRecipes.slice(6, 8).map((recipe) => (
+              <div 
+                key={recipe.id}
+                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative"
+              >
+                <img
+                  src={recipe.imageUrl}
+                  alt={recipe.title}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <h3 className="font-semibold text-white">{recipe.title}</h3>
+                  <p className="text-sm text-white/80 mb-2">{recipe.description}</p>
+                  <div className="flex items-center">
+                    <span className="text-xs text-white bg-black/30 px-2 py-1 rounded-full mr-2">
+                      {recipe.calories} Kcal
+                    </span>
+                    {recipe.prepTime && (
+                      <span className="text-xs text-white bg-black/30 px-2 py-1 rounded-full">
+                        {recipe.prepTime}
                       </span>
                     )}
                   </div>
-                  <button className="text-gray-400 hover:text-red-500 text-lg">♡</button>
                 </div>
+                <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors">
+                  <Heart className="h-5 w-5 text-gray-400 hover:text-red-500" />
+                </button>
               </div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="text-xl font-bold mt-8 mb-4">Popular Food</h2>
-        <div className="space-y-4">
-          {popularRecipes.map((recipe) => (
-            <div key={recipe.id} className="bg-white rounded-xl flex items-center p-4 gap-4 shadow-sm hover:shadow-md transition-shadow">
-              <img
-                src={recipe.imageUrl}
-                alt={recipe.title}
-                className="w-20 h-20 object-cover rounded-lg"
-              />
-              <div>
-                <h3 className="font-semibold">{recipe.title}</h3>
-                <p className="text-sm text-gray-500">{recipe.description}</p>
-                <div className="flex items-center mt-1">
-                  <p className="text-sm font-medium text-gray-800">{recipe.calories} Kcal</p>
-                  {recipe.prepTime && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded ml-2">
-                      {recipe.prepTime}
-                    </span>
-                  )}
-                  {recipe.difficulty && (
-                    <span className={`text-xs px-2 py-1 rounded ml-2 ${
-                      recipe.difficulty === 'Easy' ? 'bg-green-100 text-green-600' :
-                      recipe.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      {recipe.difficulty}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="ml-auto text-gray-400 hover:text-red-500 text-lg">♡</div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="text-xl font-bold mt-8 mb-4">Trending This Week</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {mockRecipes.slice(6, 8).map((recipe) => (
-            <div
-              key={recipe.id}
-              className="bg-white rounded-xl flex items-center p-4 gap-4 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <img
-                src={recipe.imageUrl}
-                alt={recipe.title}
-                className="w-20 h-20 object-cover rounded-lg"
-              />
-              <div>
-                <h3 className="font-semibold">{recipe.title}</h3>
-                <p className="text-sm text-gray-500">{recipe.description}</p>
-                <div className="flex items-center mt-1">
-                  <p className="text-sm font-medium text-gray-800">{recipe.calories} Kcal</p>
-                  {recipe.prepTime && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded ml-2">
-                      {recipe.prepTime}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="ml-auto text-gray-400 hover:text-red-500 text-lg">♡</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
       </main>
+
+      {/* Modern Footer */}
+      <footer className="bg-white border-t border-gray-200 py-6 mt-10">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <h2 className="text-xl font-bold text-gray-800">RecipeFinder</h2>
+              <p className="text-gray-500 text-sm">Delicious recipes for every occasion</p>
+            </div>
+            <div className="flex space-x-6">
+              <Link href="#" className="text-gray-500 hover:text-gray-800 transition-colors">About</Link>
+              <Link href="#" className="text-gray-500 hover:text-gray-800 transition-colors">Contact</Link>
+              <Link href="#" className="text-gray-500 hover:text-gray-800 transition-colors">Privacy</Link>
+              <Link href="#" className="text-gray-500 hover:text-gray-800 transition-colors">Terms</Link>
+            </div>
+          </div>
+          <div className="mt-6 text-center text-gray-400 text-sm">
+            © {new Date().getFullYear()} RecipeFinder. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

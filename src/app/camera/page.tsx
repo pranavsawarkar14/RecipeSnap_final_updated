@@ -9,7 +9,7 @@ import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions'
 import {generateDetailedRecipe} from '@/ai/flows/generate-detailed-recipe';
 import {Recipe} from "@/components/RecipeCard";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Languages} from "@/components/LanguageFilter";
+import {Languages} from "@/components/ui/LanguageFilter";
 import {Camera } from "lucide-react";
 import {useRouter} from "next/navigation";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";

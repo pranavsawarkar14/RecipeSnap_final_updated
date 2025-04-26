@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  env: {
+    YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
+    GOOGLE_GENAI_API_KEY: process.env.GOOGLE_GENAI_API_KEY,
+  },
 };
 
 export default nextConfig;

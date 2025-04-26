@@ -81,7 +81,7 @@ const Navbar = ({onSearch}: NavbarProps) => {
                 <Link href="/recipe-from-text"
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
                   <FileText className="h-6 w-6"/>
-                  <span className="text-lg">Recipe from Text</span>
+                  <span className="text-lg">Recipe Generator</span>
                 </Link>
               </li>
                 <li>

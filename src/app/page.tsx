@@ -1,18 +1,19 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import CategoryFilter from '@/components/CategoryFilter';
 import RecipeGrid from '@/components/RecipeGrid';
 import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
-import {Recipe} from '@/components/RecipeCard';
-import {useToast} from '@/hooks/use-toast';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Languages} from "@/components/LanguageFilter";
-import {useRouter} from "next/navigation";
-import {Search} from "lucide-react";
-
+import { Recipe } from '@/components/RecipeCard';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Languages } from "@/components/ui/LanguageFilter";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 const mockRecipes: Recipe[] = [
   {
     id: '1',
