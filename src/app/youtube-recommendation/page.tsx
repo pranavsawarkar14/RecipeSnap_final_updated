@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Book, Loader2, Upload, Camera, Youtube, ExternalLink, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Book, Loader2, Upload, Youtube, ExternalLink, RefreshCw, Play, Video, ThumbsUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -18,8 +18,8 @@ import Navbar from "@/components/Navbar";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {identifyIngredients} from "@/ai/flows/identify-ingredients";
 import {getYoutubeVideoSuggestions} from "@/ai/flows/generate-youtube-suggestions";
-import { useEffect, useRef } from 'react';
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Interface for YouTube video data
 interface YouTubeVideo {
@@ -39,31 +39,15 @@ const YoutubeRecommendationPage = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState(false);
+  const [showInitialAnimation, setShowInitialAnimation] = useState(true);
 
   useEffect(() => {
-    const getCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        setHasCameraPermission(true);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this app.',
-          duration: 1000,
-        });
-      }
-    };
-
-    getCameraPermission();
+    // Hide initial animation after 3 seconds
+    const timer = setTimeout(() => {
+      setShowInitialAnimation(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Get YouTube videos with guaranteed working IDs
@@ -258,11 +242,6 @@ const YoutubeRecommendationPage = () => {
     }
   };
 
-  const handleCamera = () => {
-    // Trigger file input click
-    fileInputRef.current?.click();
-  };
-
   // Handle iframe error
   const handleVideoError = (index: number) => {
     const updatedVideos = [...youtubeVideos];
@@ -278,219 +257,395 @@ const YoutubeRecommendationPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
       <Navbar />
-      <Card className="w-full max-w-md bg-card text-card-foreground shadow-md rounded-lg p-4">
-        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-
-        <h1 className="text-2xl font-bold mb-4">YouTube Recipe Videos</h1>
-        <CardDescription>Find real YouTube videos for any recipe by entering a description or uploading an image of ingredients.</CardDescription>
-        
-        <CardContent className="grid gap-4 mt-4">
-          {imagePreview ? (
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Uploaded ingredients"
-                className="max-w-full h-auto rounded-md"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 bg-background hover:bg-muted"
-                onClick={() => setImagePreview(null)}
+      <AnimatePresence>
+        {showInitialAnimation && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 bg-gradient-to-b from-red-600 to-red-800 z-50 flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center w-full max-w-2xl mx-auto px-4"
+            >
+              <motion.div
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 10,
+                  delay: 0.2
+                }}
+                className="flex justify-center items-center mb-8"
               >
-                <ArrowLeft className="h-4 w-4"/>
-              </Button>
-            </div>
-          ) : (
-            <Alert>
-              <AlertTitle>Find Recipe Videos</AlertTitle>
-              <AlertDescription>
-                Enter a recipe description or upload an image of ingredients to find matching YouTube videos.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            id="image-upload"
-            ref={fileInputRef}
-          />
-          
-          <div className="flex justify-between">
-            <Button
-              disabled={uploading || isLoading}
-              className="bg-accent text-primary-foreground hover:bg-accent-foreground"
-              onClick={() => document.getElementById('image-upload')?.click()}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4"/>
-                  Upload Image
-                </>
-              )}
-            </Button>
-            
-            <Button
-              disabled={uploading || isLoading || !hasCameraPermission}
-              className="bg-accent text-primary-foreground hover:bg-accent-foreground"
-              onClick={handleCamera}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                  Taking Photo...
-                </>
-              ) : (
-                <>
-                  <Camera className="mr-2 h-4 w-4"/>
-                  Take Photo
-                </>
-              )}
-            </Button>
-          </div>
-          
-          <Textarea
-            placeholder="Enter a recipe you want to find (e.g., 'chocolate chip cookies', 'beef stroganoff')"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="mb-4"
-            disabled={isLoading}
-          />
+                <Youtube className="h-32 w-32 text-white" />
+              </motion.div>
+              
+              <motion.h1
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-5xl font-bold text-white mb-4"
+              >
+                YouTube Recipe Videos
+              </motion.h1>
+              
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-white/80 mb-8 text-xl"
+              >
+                Discover the perfect cooking tutorial for your next meal
+              </motion.p>
 
-          <Select 
-            value={language} 
-            onValueChange={setLanguage} 
-            disabled={isLoading}
-            className="mb-4"
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="es">Spanish</SelectItem>
-              <SelectItem value="fr">French</SelectItem>
-              <SelectItem value="de">German</SelectItem>
-              <SelectItem value="ja">Japanese</SelectItem>
-              <SelectItem value="hi">Hindi</SelectItem>
-              <SelectItem value="mr">Marathi</SelectItem>
-            </SelectContent>
-          </Select>
+              {/* Floating video elements */}
+              {[Play, Video, ThumbsUp, Clock].map((Icon, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ 
+                    x: Math.random() * 100 - 50,
+                    y: -100,
+                    opacity: 0,
+                    rotate: Math.random() * 360
+                  }}
+                  animate={{ 
+                    y: 100,
+                    opacity: [0, 1, 0],
+                    rotate: Math.random() * 360
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: i * 0.2,
+                    repeat: Infinity,
+                    repeatDelay: 2
+                  }}
+                  className="absolute text-white/50"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                >
+                  <Icon className="h-6 w-6" />
+                </motion.div>
+              ))}
 
-          <Button 
-            onClick={handleGenerateRecommendations} 
-            disabled={isLoading} 
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Searching YouTube...
-              </>
-            ) : (
-              <>
-                <Youtube className="mr-2 h-4 w-4" />
-                Find Recipe Videos
-              </>
-            )}
-          </Button>
+              {/* Loading dots */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="flex justify-center gap-2 mt-8"
+              >
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0 }}
+                    animate={{ 
+                      scale: [0, 1, 0],
+                      opacity: [0, 1, 0]
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2
+                    }}
+                    className="w-3 h-3 bg-white rounded-full"
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="container mx-auto px-4 py-8 flex flex-col items-center"
+      >
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-full max-w-2xl"
+        >
+          <Card className="w-full bg-card/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardContent className="p-6 space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center justify-between"
+              >
+                <Button 
+                  variant="ghost" 
+                  onClick={() => router.back()} 
+                  className="hover:bg-accent/10 transition-colors"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+                <div className="text-sm text-muted-foreground">Find Your Perfect Recipe</div>
+              </motion.div>
 
-          {youtubeVideos.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold mb-3">Recipe Videos on YouTube:</h2>
-              <div className="space-y-4">
-                {youtubeVideos.map((video, index) => (
-                  <div key={index} className="border rounded-lg overflow-hidden">
-                    <div className="p-3 bg-muted/50 flex justify-between items-center">
-                      <h3 className="font-medium truncate">{video.title}</h3>
-                      <div className="flex items-center gap-2">
-                        {video.hasError && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handleRetryVideo(index)}
-                            className="h-6 w-6"
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <a 
-                          href={`https://www.youtube.com/watch?v=${video.id}`} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80"
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+              >
+                YouTube Recipe Videos
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-muted-foreground"
+              >
+                Discover the perfect cooking tutorial for your next meal. Enter a recipe description or upload an image of ingredients to find matching YouTube videos.
+              </motion.p>
+
+              <AnimatePresence mode="wait">
+                {imagePreview ? (
+                  <motion.div
+                    key="image-preview"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="relative rounded-xl overflow-hidden border border-border/50"
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="Uploaded ingredients"
+                      className="w-full h-64 object-cover"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background"
+                      onClick={() => setImagePreview(null)}
+                    >
+                      <ArrowLeft className="h-4 w-4"/>
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="alert"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <Alert className="bg-accent/5 border-accent/20">
+                      <AlertTitle className="text-accent">Ready to Cook?</AlertTitle>
+                      <AlertDescription>
+                        Enter a recipe description or upload an image of ingredients to find matching YouTube videos.
+                      </AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="image-upload"
+                ref={fileInputRef}
+              />
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex justify-between gap-4"
+              >
+                <Button
+                  disabled={uploading || isLoading}
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4"/>
+                      Upload Image
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <Textarea
+                  placeholder="Enter a recipe you want to find (e.g., 'chocolate chip cookies', 'beef stroganoff')"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[100px] bg-background/50 border-border/50 focus:border-primary/50"
+                  disabled={isLoading}
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <Select 
+                  value={language} 
+                  onValueChange={setLanguage} 
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-full bg-background/50 border-border/50">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Spanish</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="de">German</SelectItem>
+                    <SelectItem value="ja">Japanese</SelectItem>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                    <SelectItem value="mr">Marathi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+              >
+                <Button 
+                  onClick={handleGenerateRecommendations} 
+                  disabled={isLoading} 
+                  className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Searching YouTube...
+                    </>
+                  ) : (
+                    <>
+                      <Youtube className="mr-2 h-4 w-4" />
+                      Find Recipe Videos
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+
+              <AnimatePresence>
+                {youtubeVideos.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="mt-8 space-y-6"
+                  >
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      Recipe Videos on YouTube
+                    </h2>
+                    <div className="space-y-6">
+                      {youtubeVideos.map((video, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="border rounded-xl overflow-hidden bg-card/50 backdrop-blur-sm"
                         >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </div>
+                          <div className="p-4 bg-accent/5 flex justify-between items-center border-b border-border/50">
+                            <h3 className="font-medium truncate">{video.title}</h3>
+                            <div className="flex items-center gap-2">
+                              {video.hasError && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => handleRetryVideo(index)}
+                                  className="h-6 w-6 hover:bg-accent/10"
+                                >
+                                  <RefreshCw className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <a 
+                                href={`https://www.youtube.com/watch?v=${video.id}`} 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            </div>
+                          </div>
+                          
+                          {video.hasError ? (
+                            <a 
+                              href={`https://www.youtube.com/watch?v=${video.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block aspect-video relative bg-muted/50 flex items-center justify-center group"
+                            >
+                              <img 
+                                src={video.thumbnail} 
+                                alt={video.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 group-hover:bg-black/70 transition-colors flex flex-col items-center justify-center text-white">
+                                <Youtube className="h-8 w-8 mb-2" />
+                                <p>Click to watch on YouTube</p>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="aspect-video">
+                              <iframe
+                                width="100%"
+                                height="100%"
+                                src={`https://www.youtube.com/embed/${video.id}`}
+                                title={video.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="border-0"
+                                onError={() => handleVideoError(index)}
+                              ></iframe>
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
                     </div>
-                    
-                    {/* Show video or thumbnail based on error state */}
-                    {video.hasError ? (
-                      // Show thumbnail with link when there's an error
-                      <a 
-                        href={`https://www.youtube.com/watch?v=${video.id}`}
+
+                    <div className="text-center text-sm text-muted-foreground">
+                      <p>Having trouble viewing videos? <a 
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent((description || 'recipe') + ' recipe')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block aspect-video relative bg-muted flex items-center justify-center"
+                        className="text-primary hover:underline"
                       >
-                        <img 
-                          src={video.thumbnail} 
-                          alt={video.title}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-                          <Youtube className="h-8 w-8 mb-2" />
-                          <p>Click to watch on YouTube</p>
-                        </div>
-                      </a>
-                    ) : (
-                      // Try to embed the video with error handling
-                      <div className="aspect-video">
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={`https://www.youtube.com/embed/${video.id}`}
-                          title={video.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="border-0"
-                          onError={() => handleVideoError(index)}
-                        ></iframe>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Fallback message in case videos don't load */}
-              <div className="mt-4 text-center text-sm text-muted-foreground">
-                <p>Having trouble viewing videos? <a 
-                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent((description || 'recipe') + ' recipe')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Search directly on YouTube
-                </a></p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                        Search directly on YouTube
+                      </a></p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

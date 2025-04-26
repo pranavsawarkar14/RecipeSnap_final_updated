@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import CategoryFilter from '@/components/CategoryFilter';
 import RecipeGrid from '@/components/RecipeGrid';
+import RecipeCard from '@/components/RecipeCard';
 import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
 import { Recipe } from '@/components/RecipeCard';
@@ -48,6 +49,7 @@ const mockRecipes: Recipe[] = [
     favorite: false,
     imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
     category: 'Vegetable',
+    calories: 250
   },
   {
     id: '2',
@@ -82,6 +84,7 @@ const mockRecipes: Recipe[] = [
     favorite: false,
     imageUrl: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8',
     category: 'Rice',
+    calories: 200
   },
   {
     id: '3',
@@ -268,31 +271,35 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    // Mock API call for search
-    const fetchSearchResults = async () => {
-      if (searchTerm) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // Search functionality
+    if (searchTerm.trim()) {
+      const searchTermLower = searchTerm.toLowerCase().trim();
+      const results = recipes.filter(recipe => {
+        const title = recipe.title?.toLowerCase() || '';
+        const description = recipe.description?.toLowerCase() || '';
+        const category = recipe.category?.toLowerCase() || '';
+        const cuisine = recipe.cuisine?.toLowerCase() || '';
+        const tags = recipe.tags?.map(tag => tag.toLowerCase()) || [];
 
-        const results = mockRecipes.filter(recipe =>
-          recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          recipe.description.toLowerCase().includes(searchTerm.toLowerCase())
+        return (
+          title.includes(searchTermLower) ||
+          description.includes(searchTermLower) ||
+          category.includes(searchTermLower) ||
+          cuisine.includes(searchTermLower) ||
+          tags.some(tag => tag.includes(searchTermLower))
         );
-        setSearchResults(results);
-      } else {
-        setSearchResults([]);
-      }
-    };
-
-    fetchSearchResults();
-  }, [searchTerm]);
+      });
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchTerm, recipes]);
 
   const featuredRecipes = activeCategory === 'All'
     ? recipes
-    : recipes.filter(r => r.category === activeCategory);
+    : recipes.filter(r => (r.category?.toLowerCase() || '') === activeCategory.toLowerCase());
 
   // Fixed popularRecipes definition
-  // Get popular recipes with calories > 200
   const popularRecipes = recipes.filter(recipe => {
     // Check if calories exist directly on the recipe
     if (recipe.calories !== undefined) {
@@ -324,21 +331,30 @@ const Index = () => {
         setActiveCategory={setActiveCategory}
       />
 
-      {searchTerm && searchResults.length > 0 && (
-        <RecipeGrid
-          recipes={searchResults}
-          category="Search Results"
-          title={`Search Results for "${searchTerm}"`}
-        />
-      )}
-
-      {searchTerm && searchResults.length === 0 && (
+      {/* Search Results Section */}
+      {searchTerm.trim() && (
         <div className="mb-4">
-          <p>No recipes found for "{searchTerm}".</p>
+          <h2 className="text-2xl font-bold mb-4">
+            <span className="text-black">Search Results</span>
+            {' '}
+            <span className="text-gray-300">for "{searchTerm}"</span>
+          </h2>
+          {searchResults.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4">
+              {searchResults.map(recipe => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No recipes found for "{searchTerm}".</p>
+            </div>
+          )}
         </div>
       )}
 
-      {!searchTerm && featuredRecipes.length > 0 && (
+      {/* Category Recipes Section */}
+      {!searchTerm.trim() && featuredRecipes.length > 0 && (
         <RecipeGrid
           recipes={featuredRecipes}
           category={activeCategory}
@@ -346,7 +362,8 @@ const Index = () => {
         />
       )}
 
-      {!searchTerm && <PopularRecipes recipes={popularRecipes}/>}
+      {/* Popular Recipes Section */}
+      {!searchTerm.trim() && <PopularRecipes recipes={popularRecipes}/>}
 
       <CameraButton/>
     </div>

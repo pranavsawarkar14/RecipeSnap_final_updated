@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Sparkles, ChefHat, Clock, Utensils, Flame, Info, Book, Plus, Minus, Share2, Printer, Download, Heart, Clipboard } from 'lucide-react';
+import { ArrowLeft, Loader2, Sparkles, ChefHat, Clock, Utensils, Flame, Info, Book, Plus, Minus, Share2, Printer, Download, Heart, Clipboard, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -147,6 +148,9 @@ const RecipeFromTextPage = () => {
   const [activeTab, setActiveTab] = useState<string>("description");
   const [generationProgress, setGenerationProgress] = useState<number>(0);
   const [savedRecipes, setSavedRecipes] = useState<DetailedRecipe[]>([]);
+  const [showFullScreenLoader, setShowFullScreenLoader] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [showInitialAnimation, setShowInitialAnimation] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('savedRecipes');
@@ -160,6 +164,15 @@ const RecipeFromTextPage = () => {
       localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
     }
   }, [savedRecipes]);
+
+  useEffect(() => {
+    // Hide initial animation after 3 seconds
+    const timer = setTimeout(() => {
+      setShowInitialAnimation(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const parseArrayData = (data: any, fallback: string[] = []): string[] => {
     if (!data) return fallback;
@@ -336,6 +349,8 @@ const RecipeFromTextPage = () => {
     }
 
     setIsLoading(true);
+    setShowFullScreenLoader(true);
+    setShowSuccessAnimation(false);
     setError(null);
     setGenerationProgress(0);
     
@@ -432,6 +447,9 @@ const RecipeFromTextPage = () => {
           : formattedRecipes;
         localStorage.setItem('generatedRecipes', JSON.stringify(allGeneratedRecipes));
         
+        setShowSuccessAnimation(true);
+        setTimeout(() => setShowSuccessAnimation(false), 3000);
+        
         toast({
           title: "Detailed recipe created!",
           description: "Scroll down to see your comprehensive recipe",
@@ -453,6 +471,7 @@ const RecipeFromTextPage = () => {
       });
     } finally {
       setIsLoading(false);
+      setShowFullScreenLoader(false);
       setGenerationProgress(100);
     }
   };
@@ -461,6 +480,305 @@ const RecipeFromTextPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50">
       <Navbar />
       
+      <AnimatePresence>
+        {showInitialAnimation && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 z-50 flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <motion.div
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 10,
+                  delay: 0.2
+                }}
+                className="mb-8"
+              >
+                <ChefHat className="h-24 w-24 text-white" />
+              </motion.div>
+              
+              <motion.h1
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-5xl font-bold text-white mb-4"
+              >
+                Welcome..
+              </motion.h1>
+              
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-white/80 mb-8 text-xl"
+              >
+                Your AI-powered recipe generator
+              </motion.p>
+
+              {/* Floating cooking utensils */}
+              {[Utensils, Flame, Clock, Book].map((Icon, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ 
+                    x: Math.random() * 100 - 50,
+                    y: -100,
+                    opacity: 0,
+                    rotate: Math.random() * 360
+                  }}
+                  animate={{ 
+                    y: 100,
+                    opacity: [0, 1, 0],
+                    rotate: Math.random() * 360
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: i * 0.2,
+                    repeat: Infinity,
+                    repeatDelay: 2
+                  }}
+                  className="absolute text-white/50"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                >
+                  <Icon className="h-6 w-6" />
+                </motion.div>
+              ))}
+
+              {/* Loading dots */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="flex justify-center gap-2 mt-8"
+              >
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0 }}
+                    animate={{ 
+                      scale: [0, 1, 0],
+                      opacity: [0, 1, 0]
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2
+                    }}
+                    className="w-3 h-3 bg-white rounded-full"
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showFullScreenLoader && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 z-50 flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <motion.div
+                animate={{
+                  rotate: 360,
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="mb-8"
+              >
+                <ChefHat className="h-20 w-20 text-white" />
+              </motion.div>
+              
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-3xl font-bold text-white mb-4"
+              >
+                Crafting Your Recipe
+              </motion.h2>
+              
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-white/80 mb-8"
+              >
+                Our AI chef is working hard to create your perfect recipe
+              </motion.p>
+              
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="h-1 bg-white/20 rounded-full overflow-hidden"
+              >
+                <motion.div
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="h-full bg-white/50"
+                />
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="mt-4 text-white/60 text-sm"
+              >
+                {generationProgress}% Complete
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSuccessAnimation && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-gradient-to-br from-emerald-500/90 to-teal-500/90 z-50 flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 10
+                }}
+                className="mb-8"
+              >
+                <CheckCircle2 className="h-24 w-24 text-white" />
+              </motion.div>
+              
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl font-bold text-white mb-4"
+              >
+                Recipe Generated!
+              </motion.h2>
+              
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-white/90 mb-8 text-lg"
+              >
+                Your perfect recipe is ready to explore
+              </motion.p>
+
+              {/* Floating confetti elements */}
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ 
+                    x: Math.random() * 100 - 50,
+                    y: -100,
+                    opacity: 0,
+                    rotate: Math.random() * 360
+                  }}
+                  animate={{ 
+                    y: 100,
+                    opacity: [0, 1, 0],
+                    rotate: Math.random() * 360
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: i * 0.1,
+                    repeat: Infinity,
+                    repeatDelay: 2
+                  }}
+                  className="absolute text-white"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                >
+                  <Sparkles className="h-4 w-4" />
+                </motion.div>
+              ))}
+
+              {/* Floating text elements */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="mt-8 space-y-2"
+              >
+                {["Delicious!", "Perfect!", "Amazing!", "Yummy!"].map((text, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ 
+                      x: Math.random() * 100 - 50,
+                      y: 0,
+                      opacity: 0,
+                      scale: 0
+                    }}
+                    animate={{ 
+                      y: -50,
+                      opacity: [0, 1, 0],
+                      scale: [0, 1, 0]
+                    }}
+                    transition={{
+                      duration: 2,
+                      delay: i * 0.3,
+                      repeat: Infinity,
+                      repeatDelay: 2
+                    }}
+                    className="absolute text-white font-bold text-xl"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                    }}
+                  >
+                    {text}
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="mb-12 text-center">
           <Button 
