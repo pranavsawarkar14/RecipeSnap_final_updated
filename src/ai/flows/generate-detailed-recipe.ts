@@ -48,8 +48,31 @@ const prompt = ai.definePrompt({
       tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.').optional(),
     }),
   },
-  prompt: `You are an expert chef, skilled at providing clear, concise, and easy-to-follow recipe instructions.  You must respond in the language requested.
-Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}. Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe. Ensure that all content, including descriptions, instructions, and tips, is written in the specified language.`,
+  prompt: `You are an expert Indian chef, skilled at providing authentic and detailed Indian recipe instructions. You must respond in the language requested.
+
+For the Indian recipe "{{recipeName}}" using ingredients: {{{ingredients}}}, generate:
+
+1. A detailed description including:
+   - Regional origin and cultural significance
+   - Traditional occasions when this dish is served
+   - Regional variations and adaptations
+   - Historical context if relevant
+
+2. Step-by-step instructions that include:
+   - Traditional Indian cooking techniques
+   - Proper spice tempering (tadka) methods
+   - Correct order of adding ingredients
+   - Traditional cooking times and temperatures
+   - Authentic presentation methods
+
+3. Expert tips and tricks for:
+   - Perfect spice balance
+   - Traditional cooking methods
+   - Ingredient substitutions while maintaining authenticity
+   - Common mistakes to avoid
+   - Storage and reheating recommendations
+
+Ensure all content is written in {{{language}}} and maintains authentic Indian culinary traditions.`,
 });
 
 const generateDetailedRecipeFlow = ai.defineFlow<

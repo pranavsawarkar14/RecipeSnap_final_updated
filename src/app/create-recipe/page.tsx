@@ -42,6 +42,7 @@ const CreateRecipe = () => {
   const [cookingTime, setCookingTime] = useState<string>('any');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
+  const [showRecipeReady, setShowRecipeReady] = useState(false);
   const [showMagicEffect, setShowMagicEffect] = useState(false);
   const [showFullScreenLoader, setShowFullScreenLoader] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -249,6 +250,7 @@ const CreateRecipe = () => {
     setIsGenerating(true);
     setCurrentRecipeIndex(0);
     setShowFullScreenLoader(true);
+    setShowRecipeReady(false);
     
     try {
       let identifiedIngredients: string[] = [];
@@ -324,6 +326,12 @@ const CreateRecipe = () => {
         title: 'Success!',
         description: 'Recipes generated successfully!',
       });
+
+      // Show recipe ready animation
+      setShowRecipeReady(true);
+      setTimeout(() => {
+        setShowRecipeReady(false);
+      }, 2000);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -594,6 +602,126 @@ const CreateRecipe = () => {
                     delay: 0.4,
                   }}
                 />
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+        {showRecipeReady && (
+          <motion.div
+            className="fixed inset-0 bg-gradient-to-br from-emerald-500/90 to-teal-500/90 flex flex-col items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              className="text-center space-y-8 max-w-md mx-auto"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div
+                className="relative mx-auto w-40 h-40"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 360],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: 1,
+                  ease: "easeInOut",
+                }}
+              >
+                <motion.div
+                  className="absolute inset-0"
+                  animate={{
+                    rotate: [0, -360],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: 1,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <ChefHat className="w-full h-full text-white" />
+                </motion.div>
+                
+                <motion.div
+                  className="absolute -top-4 -right-4"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    rotate: [0, 360],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: 1,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Wand2 className="h-10 w-10 text-emerald-200" />
+                </motion.div>
+
+                <motion.div
+                  className="absolute -bottom-2 -left-2"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    rotate: [0, -360],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: 1,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Salad className="h-8 w-8 text-emerald-100" />
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <motion.h2
+                  className="text-3xl font-bold text-white"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  Recipe Ready!
+                </motion.h2>
+                <motion.p
+                  className="text-xl text-white/90"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  Your delicious recipes are waiting for you!
+                </motion.p>
+              </motion.div>
+
+              <motion.div
+                className="flex justify-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="h-2 w-2 rounded-full bg-white"
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: 1,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
               </motion.div>
             </motion.div>
           </motion.div>
@@ -1319,25 +1447,25 @@ const CreateRecipe = () => {
                                         </motion.p>
                                       </CardHeader>
                                       <CardContent>
-                                        <div className="space-y-4">
+                                        <div className="space-y-6">
                                           {recipe.tipsAndTricks?.length > 0 && (
                                             <motion.div
                                               initial={{ opacity: 0, y: 20 }}
                                               animate={{ opacity: 1, y: 0 }}
                                               transition={{ duration: 0.3, delay: 0.3 }}
                                             >
-                                              <h4 className="font-bold mb-2 flex items-center gap-2 text-emerald-700">
+                                              <h4 className="font-bold mb-3 flex items-center gap-2 text-emerald-700">
                                                 <Sparkles className="h-4 w-4 text-emerald-500" />
                                                 {t.tips}
                                               </h4>
-                                              <ul className="list-disc pl-5 space-y-1 text-sm text-emerald-600">
-                                                {recipe.tipsAndTricks.slice(0, 2).map((tip, i) => (
+                                              <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
+                                                {recipe.tipsAndTricks.slice(0, 3).map((tip, i) => (
                                                   <motion.li
                                                     key={i}
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ duration: 0.3, delay: 0.4 + i * 0.1 }}
-                                                    className="font-medium"
+                                                    className="font-medium leading-relaxed"
                                                   >
                                                     {isGenerating && index === currentRecipeIndex ? (
                                                       <Typewriter
@@ -1363,15 +1491,15 @@ const CreateRecipe = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3, delay: 0.4 }}
                                           >
-                                            <h4 className="font-bold mb-2 text-emerald-700">{t.instructions}</h4>
-                                            <ol className="list-decimal pl-5 space-y-2 text-sm text-emerald-600">
-                                              {recipe.instructions.slice(0, 3).map((step, i) => (
+                                            <h4 className="font-bold mb-3 text-emerald-700">{t.instructions}</h4>
+                                            <ol className="list-decimal pl-5 space-y-3 text-sm text-gray-800">
+                                              {recipe.instructions?.slice(0, 5).map((step, i) => (
                                                 <motion.li
                                                   key={i}
                                                   initial={{ opacity: 0, x: -20 }}
                                                   animate={{ opacity: 1, x: 0 }}
                                                   transition={{ duration: 0.3, delay: 0.5 + i * 0.1 }}
-                                                  className="font-medium"
+                                                  className="font-medium leading-relaxed"
                                                 >
                                                   {isGenerating && index === currentRecipeIndex ? (
                                                     <Typewriter
@@ -1389,6 +1517,68 @@ const CreateRecipe = () => {
                                                 </motion.li>
                                               ))}
                                             </ol>
+                                          </motion.div>
+
+                                          {recipe.ingredients && recipe.ingredients.length > 0 && (
+                                            <motion.div
+                                              initial={{ opacity: 0, y: 20 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              transition={{ duration: 0.3, delay: 0.5 }}
+                                            >
+                                              <h4 className="font-bold mb-3 flex items-center gap-2 text-emerald-700">
+                                                <Utensils className="h-4 w-4 text-emerald-500" />
+                                                Ingredients
+                                              </h4>
+                                              <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
+                                                {recipe.ingredients.map((ingredient, i) => (
+                                                  <motion.li
+                                                    key={i}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.3, delay: 0.6 + i * 0.1 }}
+                                                    className="font-medium leading-relaxed"
+                                                  >
+                                                    {isGenerating && index === currentRecipeIndex ? (
+                                                      <Typewriter
+                                                        words={[ingredient]}
+                                                        loop={1}
+                                                        cursor
+                                                        cursorStyle="_"
+                                                        typeSpeed={20}
+                                                        deleteSpeed={50}
+                                                        delaySpeed={1000}
+                                                      />
+                                                    ) : (
+                                                      ingredient
+                                                    )}
+                                                  </motion.li>
+                                                ))}
+                                              </ul>
+                                            </motion.div>
+                                          )}
+
+                                          <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: 0.6 }}
+                                            className="grid grid-cols-2 gap-4 pt-4 border-t border-emerald-100"
+                                          >
+                                            <div className="space-y-2">
+                                              <h4 className="font-bold text-sm text-emerald-700">Prep Time</h4>
+                                              <p className="text-sm text-gray-800">{recipe.prepTime || '30 mins'}</p>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <h4 className="font-bold text-sm text-emerald-700">Difficulty</h4>
+                                              <p className="text-sm text-gray-800">{recipe.difficulty || 'Medium'}</p>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <h4 className="font-bold text-sm text-emerald-700">Calories</h4>
+                                              <p className="text-sm text-gray-800">{recipe.calories || 200} kcal</p>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <h4 className="font-bold text-sm text-emerald-700">Servings</h4>
+                                              <p className="text-sm text-gray-800">{recipe.servings || 4}</p>
+                                            </div>
                                           </motion.div>
                                         </div>
                                       </CardContent>

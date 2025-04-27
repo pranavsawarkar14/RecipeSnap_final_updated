@@ -151,6 +151,7 @@ const RecipeFromTextPage = () => {
   const [showFullScreenLoader, setShowFullScreenLoader] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [showInitialAnimation, setShowInitialAnimation] = useState(true);
+  const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const saved = localStorage.getItem('savedRecipes');
@@ -338,6 +339,22 @@ const RecipeFromTextPage = () => {
     }
   };
 
+  const getUnsplashImageUrl = (query: string) => {
+    const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
+    if (!accessKey) {
+      console.error('Unsplash API key not found');
+      return `https://source.unsplash.com/featured/600x400/?${encodeURIComponent(query + " food recipe")}`;
+    }
+    return `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query + " food recipe")}&client_id=${accessKey}`;
+  };
+
+  const handleImageLoad = (recipeId: string) => {
+    setImageLoading(prev => ({
+      ...prev,
+      [recipeId]: false
+    }));
+  };
+
   const handleGenerateRecipe = async () => {
     if (!recipeDescription.trim()) {
       toast({
@@ -384,61 +401,103 @@ const RecipeFromTextPage = () => {
       setGenerationProgress(60);
       
       if (result.recipes?.length > 0) {
-        const formattedRecipes = result.recipes.map((recipe: GeneratedRecipe) => {
-          // Create a more specific search query for the image
-          const searchTerms = [
-            recipe.name || recipe.title || "food",
-            recipe.cuisine || selectedCuisines[0] || "",
-            "recipe",
-            "food",
-            "dish",
-            "cooking",
-            "meal"
-          ].filter(Boolean).join(',');
-          
-          const searchQuery = encodeURIComponent(searchTerms);
-          
-          const formattedRecipe: DetailedRecipe = {
-            id: uuidv4(),
-            title: recipe.name || recipe.title || "Detailed Recipe",
-            description: recipe.description || "A delicious detailed recipe crafted with AI precision",
-            story: recipe.story || recipe.background || recipe.history || "This recipe combines traditional techniques with modern flavors for a delightful culinary experience.",
-            ingredients: parseArrayData(recipe.ingredients, ["Ingredients not provided"]),
-            ingredientNotes: parseIngredientNotes(recipe.ingredientNotes || recipe.notes),
-            instructions: parseArrayData(recipe.instructions, ["Instructions not provided"]),
-            tips: parseArrayData(recipe.tips || recipe.cookingTips, ["Cook with love and attention to detail"]),
-            prepTime: recipe.prepTime || `${Math.floor(Math.random() * 30) + 15} mins`,
-            cookTime: recipe.cookTime || `${Math.floor(Math.random() * 45) + 20} mins`,
-            totalTime: recipe.totalTime || `${Math.floor(Math.random() * 60) + 40} mins`,
-            servings: recipe.servings || servings,
-            difficulty: recipe.difficulty || (['Easy', 'Medium', 'Hard'][Math.floor(Math.random() * 3)] as 'Easy' | 'Medium' | 'Hard'),
-            cuisine: recipe.cuisine || recipe.cuisineType || selectedCuisines[0] || "Fusion",
-            nutrition: {
-              calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200,
-              protein: recipe.nutrition?.protein || `${Math.floor(Math.random() * 30) + 5}g`,
-              carbs: recipe.nutrition?.carbs || `${Math.floor(Math.random() * 50) + 20}g`,
-              fat: recipe.nutrition?.fat || `${Math.floor(Math.random() * 30) + 5}g`,
-              fiber: recipe.nutrition?.fiber || `${Math.floor(Math.random() * 10) + 2}g`,
-              sugar: recipe.nutrition?.sugar || `${Math.floor(Math.random() * 15) + 2}g`,
-              sodium: recipe.nutrition?.sodium || `${Math.floor(Math.random() * 500) + 100}mg`
-            },
-            dietaryInfo: parseArrayData(recipe.dietaryInfo || recipe.dietary, selectedDietary.length > 0 ? selectedDietary : ["No specific dietary information"]),
-            tags: parseArrayData(recipe.tags, ['AI-Generated', 'Detailed Recipe']),
-            variations: parseArrayData(recipe.variations || recipe.alternativeVersions, ["This recipe can be customized based on personal preference and ingredient availability."]),
-            storage: recipe.storage || recipe.storageInstructions || "Store leftovers in an airtight container in the refrigerator for up to 3 days.",
-            equipment: parseArrayData(recipe.equipment || recipe.kitchenTools, ["Basic kitchen equipment"]),
-            rating: 0,
-            favorite: false,
-            imageUrl: `https://source.unsplash.com/featured/600x400/?${searchQuery}`,
-            category: recipe.cuisine || "Fusion",
-            calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200
-          };
-          
-          return formattedRecipe;
-        });
+        const formattedRecipes = await Promise.all(
+          result.recipes.map(async (recipe: GeneratedRecipe) => {
+            try {
+              const imageUrl = getUnsplashImageUrl(recipe.name || recipe.title || "food");
+              let finalImageUrl = imageUrl;
+              
+              if (imageUrl.includes('api.unsplash.com')) {
+                const response = await fetch(imageUrl);
+                const data = await response.json();
+                finalImageUrl = data.urls.regular;
+              }
+
+              return {
+                id: uuidv4(),
+                title: recipe.name || recipe.title || "Detailed Recipe",
+                description: recipe.description || "A delicious detailed recipe crafted with AI precision",
+                story: recipe.story || recipe.background || recipe.history || "This recipe combines traditional techniques with modern flavors for a delightful culinary experience.",
+                ingredients: parseArrayData(recipe.ingredients, ["Ingredients not provided"]),
+                ingredientNotes: parseIngredientNotes(recipe.ingredientNotes || recipe.notes),
+                instructions: parseArrayData(recipe.instructions, ["Instructions not provided"]),
+                tips: parseArrayData(recipe.tips || recipe.cookingTips, ["Cook with love and attention to detail"]),
+                prepTime: recipe.prepTime || `${Math.floor(Math.random() * 30) + 15} mins`,
+                cookTime: recipe.cookTime || `${Math.floor(Math.random() * 45) + 20} mins`,
+                totalTime: recipe.totalTime || `${Math.floor(Math.random() * 60) + 40} mins`,
+                servings: recipe.servings || servings,
+                difficulty: recipe.difficulty || (['Easy', 'Medium', 'Hard'][Math.floor(Math.random() * 3)] as 'Easy' | 'Medium' | 'Hard'),
+                cuisine: recipe.cuisine || recipe.cuisineType || selectedCuisines[0] || "Fusion",
+                nutrition: {
+                  calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200,
+                  protein: recipe.nutrition?.protein || `${Math.floor(Math.random() * 30) + 5}g`,
+                  carbs: recipe.nutrition?.carbs || `${Math.floor(Math.random() * 50) + 20}g`,
+                  fat: recipe.nutrition?.fat || `${Math.floor(Math.random() * 30) + 5}g`,
+                  fiber: recipe.nutrition?.fiber || `${Math.floor(Math.random() * 10) + 2}g`,
+                  sugar: recipe.nutrition?.sugar || `${Math.floor(Math.random() * 15) + 2}g`,
+                  sodium: recipe.nutrition?.sodium || `${Math.floor(Math.random() * 500) + 100}mg`
+                },
+                dietaryInfo: parseArrayData(recipe.dietaryInfo || recipe.dietary, selectedDietary.length > 0 ? selectedDietary : ["No specific dietary information"]),
+                tags: parseArrayData(recipe.tags, ['AI-Generated', 'Detailed Recipe']),
+                variations: parseArrayData(recipe.variations || recipe.alternativeVersions, ["This recipe can be customized based on personal preference and ingredient availability."]),
+                storage: recipe.storage || recipe.storageInstructions || "Store leftovers in an airtight container in the refrigerator for up to 3 days.",
+                equipment: parseArrayData(recipe.equipment || recipe.kitchenTools, ["Basic kitchen equipment"]),
+                rating: 0,
+                favorite: false,
+                imageUrl: finalImageUrl,
+                category: recipe.cuisine || "Fusion",
+                calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200
+              };
+            } catch (error) {
+              console.error('Error fetching image:', error);
+              return {
+                id: uuidv4(),
+                title: recipe.name || recipe.title || "Detailed Recipe",
+                description: recipe.description || "A delicious detailed recipe crafted with AI precision",
+                story: recipe.story || recipe.background || recipe.history || "This recipe combines traditional techniques with modern flavors for a delightful culinary experience.",
+                ingredients: parseArrayData(recipe.ingredients, ["Ingredients not provided"]),
+                ingredientNotes: parseIngredientNotes(recipe.ingredientNotes || recipe.notes),
+                instructions: parseArrayData(recipe.instructions, ["Instructions not provided"]),
+                tips: parseArrayData(recipe.tips || recipe.cookingTips, ["Cook with love and attention to detail"]),
+                prepTime: recipe.prepTime || `${Math.floor(Math.random() * 30) + 15} mins`,
+                cookTime: recipe.cookTime || `${Math.floor(Math.random() * 45) + 20} mins`,
+                totalTime: recipe.totalTime || `${Math.floor(Math.random() * 60) + 40} mins`,
+                servings: recipe.servings || servings,
+                difficulty: recipe.difficulty || (['Easy', 'Medium', 'Hard'][Math.floor(Math.random() * 3)] as 'Easy' | 'Medium' | 'Hard'),
+                cuisine: recipe.cuisine || recipe.cuisineType || selectedCuisines[0] || "Fusion",
+                nutrition: {
+                  calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200,
+                  protein: recipe.nutrition?.protein || `${Math.floor(Math.random() * 30) + 5}g`,
+                  carbs: recipe.nutrition?.carbs || `${Math.floor(Math.random() * 50) + 20}g`,
+                  fat: recipe.nutrition?.fat || `${Math.floor(Math.random() * 30) + 5}g`,
+                  fiber: recipe.nutrition?.fiber || `${Math.floor(Math.random() * 10) + 2}g`,
+                  sugar: recipe.nutrition?.sugar || `${Math.floor(Math.random() * 15) + 2}g`,
+                  sodium: recipe.nutrition?.sodium || `${Math.floor(Math.random() * 500) + 100}mg`
+                },
+                dietaryInfo: parseArrayData(recipe.dietaryInfo || recipe.dietary, selectedDietary.length > 0 ? selectedDietary : ["No specific dietary information"]),
+                tags: parseArrayData(recipe.tags, ['AI-Generated', 'Detailed Recipe']),
+                variations: parseArrayData(recipe.variations || recipe.alternativeVersions, ["This recipe can be customized based on personal preference and ingredient availability."]),
+                storage: recipe.storage || recipe.storageInstructions || "Store leftovers in an airtight container in the refrigerator for up to 3 days.",
+                equipment: parseArrayData(recipe.equipment || recipe.kitchenTools, ["Basic kitchen equipment"]),
+                rating: 0,
+                favorite: false,
+                imageUrl: `https://source.unsplash.com/featured/600x400/?${encodeURIComponent(recipe.name || recipe.title || "food recipe")}`,
+                category: recipe.cuisine || "Fusion",
+                calories: recipe.nutrition?.calories || Math.floor(Math.random() * 800) + 200
+              };
+            }
+          })
+        );
 
         setGenerationProgress(95);
         setRecipes(formattedRecipes);
+        
+        // Initialize image loading states
+        const loadingStates = formattedRecipes.reduce((acc: any, recipe) => {
+          acc[recipe.id] = true;
+          return acc;
+        }, {});
+        setImageLoading(loadingStates);
         
         // Save generated recipes to localStorage
         const existingRecipes = localStorage.getItem('generatedRecipes');
@@ -998,7 +1057,7 @@ const RecipeFromTextPage = () => {
           <section className="mb-16">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900">
-                Your Professional Recipe
+                Your Recipe is Ready...
               </h2>
               <div className="flex gap-2">
                 <TooltipProvider>
@@ -1086,6 +1145,18 @@ const RecipeFromTextPage = () => {
                   key={recipe.id}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200"
                 >
+                  <div className="relative h-64 overflow-hidden">
+                    {imageLoading[recipe.id] ? (
+                      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse" />
+                    ) : (
+                      <img
+                        src={recipe.imageUrl}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                        onLoad={() => handleImageLoad(recipe.id)}
+                      />
+                    )}
+                  </div>
                   <div className="p-8">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
                       <div className="flex-1">

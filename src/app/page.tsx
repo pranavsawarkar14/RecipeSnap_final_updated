@@ -237,12 +237,14 @@ type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Breakfast' | 'Seafood'
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const {toast} = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Recipe[]>([]);
   const router = useRouter();
 
   useEffect(() => {
+    setIsLoading(true);
     // First load generated recipes from localStorage
     const generatedRecipes = localStorage.getItem('generatedRecipes');
     let allRecipes = [...mockRecipes];
@@ -259,6 +261,7 @@ const Index = () => {
 
     // Set all recipes with generated ones on top
     setRecipes(allRecipes);
+    setIsLoading(false);
 
     // Show welcome toast on first load
     if (!localStorage.getItem('hasSeenWelcome')) {
@@ -339,10 +342,20 @@ const Index = () => {
             {' '}
             <span className="text-gray-300">for "{searchTerm}"</span>
           </h2>
-          {searchResults.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-4">
+              {[...Array(4)].map((_, index) => (
+                <div key={index} className="bg-white rounded-3xl p-4 shadow-sm">
+                  <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100 animate-pulse rounded-2xl mb-4" />
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : searchResults.length > 0 ? (
             <div className="grid grid-cols-2 gap-4">
               {searchResults.map(recipe => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
+                <RecipeCard key={recipe.id} recipe={recipe} isLoading={isLoading} />
               ))}
             </div>
           ) : (
@@ -354,16 +367,32 @@ const Index = () => {
       )}
 
       {/* Category Recipes Section */}
-      {!searchTerm.trim() && featuredRecipes.length > 0 && (
-        <RecipeGrid
-          recipes={featuredRecipes}
-          category={activeCategory}
-          title={`${activeCategory} Recipes`}
-        />
+      {!searchTerm.trim() && (
+        isLoading ? (
+          <div className="grid grid-cols-2 gap-4">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="bg-white rounded-3xl p-4 shadow-sm">
+                <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100 animate-pulse rounded-2xl mb-4" />
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : featuredRecipes.length > 0 ? (
+          <RecipeGrid
+            recipes={featuredRecipes}
+            category={activeCategory}
+            title={`${activeCategory} Recipes`}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No recipes found in this category.</p>
+          </div>
+        )
       )}
 
       {/* Popular Recipes Section */}
-      {!searchTerm.trim() && <PopularRecipes recipes={popularRecipes}/>}
+      {!searchTerm.trim() && !isLoading && <PopularRecipes recipes={popularRecipes}/>}
 
       <CameraButton/>
     </div>

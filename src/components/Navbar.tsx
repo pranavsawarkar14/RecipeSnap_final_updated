@@ -1,6 +1,6 @@
 'use client';
 
-import {Book, Heart, Home, Menu, Search, Settings, Upload, User, FileText, Youtube} from 'lucide-react';
+import {Book, Heart, Home, Menu, Search, Settings, Upload, User, FileText, Youtube, Lightbulb} from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -46,6 +46,7 @@ const Navbar = ({onSearch}: NavbarProps) => {
     { icon: Upload, label: 'Upload Photo', href: '/create-recipe' },
     { icon: FileText, label: 'Recipe Generator', href: '/recipe-from-text' },
     { icon: Youtube, label: 'YouTube Recommendation', href: '/youtube-recommendation' },
+    { icon: Lightbulb, label: 'Suggestions', href: '/suggestions' },
     { icon: User, label: 'My Profile', href: '/profile' },
     { icon: Settings, label: 'Settings', href: '/settings' },
   ];
